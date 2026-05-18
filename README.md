@@ -33,6 +33,21 @@ Because they have already been adopted in the literature. In particular, [Liu et
 
 COUNTER-Robots is the robot list maintained by [Project COUNTER](https://www.projectcounter.org), an international initiative that sets standards for counting usage of electronic scholarly resources. Since OpenCitations is itself a scholarly infrastructure, filtering its logs with COUNTER-Robots aligns with the conventions of the domain.
 
+## Findings
+
+The dataset covers January through April 2026. Both files are in the `output/` directory: `daily_traffic.csv` with per-day request counts by category, and `daily_traffic.png` as a stacked area chart.
+
+```csv
+date,human,generic_bot,llm_bot
+2026-01-01,209451,1975288,33985
+2026-01-02,159042,1474473,49966
+...
+```
+
+![Daily traffic](output/daily_traffic.png)
+
+Across the entire period, human traffic accounts for 16% to 24% of monthly requests. Generic bots dominate at 66% to 78%. LLM bots started at 2% in January and reached 11% in April, growing from 1.3M to 4.9M monthly requests (+267%).
+
 ## Limitations
 
 User-agent string matching only detects bots that openly identify themselves; the per-IP threshold mitigates UA spoofing but may misclassify shared IPs (university proxies, corporate NATs) that legitimately exceed 1,000 daily requests. In practice, bot counts are a lower bound and human counts an upper bound. The classification remains useful for tracking relative trends over time, since the same rules applied consistently yield comparable proportions across periods.
@@ -47,19 +62,3 @@ uv run python -m oc_botwatch.classify
 uv run python -m oc_botwatch.visualize
 ```
 
-## Output
-
-Both files are in the `output/` directory.
-
-`output/daily_traffic.csv`: per-day request counts by category.
-
-```csv
-date,human,generic_bot,llm_bot
-2026-01-01,150432,28901,4210
-2026-01-02,148877,27650,4455
-...
-```
-
-`output/daily_traffic.png`: stacked area chart of daily traffic.
-
-![Daily traffic](output/daily_traffic.png)
