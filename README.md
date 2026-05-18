@@ -18,10 +18,9 @@ User-agent strings are matched against three open databases (included as git sub
 
 A request is labeled `llm_bot` if its user-agent matches any entry in ai.robots.txt (apart from "Spider" or "Code", which are too generic and fall through to generic bot detection). Otherwise, if it matches crawler-user-agents (excluding entries already tagged as `ai-crawler`) or COUNTER-Robots, it's labeled `generic_bot`. 
 
-Two supplementary files cover bots present in our data that none of the three databases include:
+A supplementary file covers bots present in our data that none of the three databases include:
 
 - [`supplementary_bots.txt`](supplementary_bots.txt)
-- [`supplementary_llm_bots.txt`](supplementary_llm_bots.txt)
 
 After user-agent classification, any IP that generates more than 1,000 requests in a single day while classified as `human` is reclassified as `generic_bot`.
 
@@ -39,8 +38,8 @@ The dataset covers January through April 2026. Both files are in the `output/` d
 
 ```csv
 date,human,generic_bot,llm_bot
-2026-01-01,209451,1975288,33985
-2026-01-02,159042,1474473,49966
+2026-01-01,205984,1978755,33985
+2026-01-02,156806,1476709,49966
 ...
 ```
 
@@ -48,7 +47,7 @@ date,human,generic_bot,llm_bot
 
 ![Daily traffic share](output/daily_traffic_pct.png)
 
-Across the entire period, human traffic accounts for 16% to 24% of monthly requests. Generic bots dominate at 66% to 78%. LLM bots started at 2% in January and reached 11% in April, growing from 1.3M to 4.9M monthly requests (+267%).
+Across the entire period, human traffic accounts for 15% to 24% of monthly requests. Generic bots dominate at 66% to 78%. LLM bots started at 2% in January and reached 11% in April, growing from 1.3M to 4.9M monthly requests (+267%).
 
 ## Limitations
 
