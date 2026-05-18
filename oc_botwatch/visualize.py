@@ -17,10 +17,10 @@ def plot_daily_traffic(df: pl.DataFrame, output: Path) -> None:
     dates = df["date"].to_list()
     human = df["human"].to_list()
     generic_bot = df["generic_bot"].to_list()
-    ai_bot = df["ai_bot"].to_list()
+    llm_bot = df["llm_bot"].to_list()
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    ax.stackplot(dates, human, generic_bot, ai_bot, labels=["Human", "Generic bot", "AI bot"], alpha=0.8)
+    ax.stackplot(dates, human, generic_bot, llm_bot, labels=["Human", "Generic bot", "LLM bot"], alpha=0.8)
     ax.legend(loc="upper left")
     ax.set_ylabel("Requests")
     def _fmt_axis(x: float, _pos: int) -> str:

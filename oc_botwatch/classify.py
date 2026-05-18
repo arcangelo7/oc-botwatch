@@ -10,11 +10,28 @@ logger = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).resolve().parent.parent
 INPUT_DIR = BASE_DIR / "input"
 
+_SKIP_LLM_NAMES: frozenset[str] = frozenset({"Spider", "Code"})
 
-def _build_ai_pattern() -> str:
+_SUPPLEMENTARY_BOT_PATTERNS: list[str] = [
+    r"^node$",
+    r"XeraRetractionTracker",
+    r"academic-doi-finder",
+    r"opencitations-second-hop",
+    r"Episciences",
+    r"Microsoft\.Data\.Mashup",
+    r"PMC_abstract",
+]
+
+
+def _build_llm_pattern() -> str:
     with (BASE_DIR / "ai-robots-txt" / "robots.json").open() as f:
-        data = json.load(f)
-    return "(?i)" + "|".join(re.escape(name) for name in data)
+        data: dict[str, object] = json.load(f)
+    parts: list[str] = []
+    for name in data:
+        if name in _SKIP_LLM_NAMES:
+            continue
+        parts.append(rf"\b{re.escape(name)}\b")
+    return "(?i)" + "|".join(parts)
 
 
 def _build_generic_bot_pattern() -> str:
@@ -28,11 +45,12 @@ def _build_generic_bot_pattern() -> str:
             continue
         patterns.append(entry["pattern"])
     patterns.extend(entry["pattern"] for entry in counter)
+    patterns.extend(_SUPPLEMENTARY_BOT_PATTERNS)
     return "(?i)" + "|".join(patterns)
 
 
 def classify_traffic() -> pl.DataFrame:
-    ai_pat = _build_ai_pattern()
+    llm_pat = _build_llm_pattern()
     generic_pat = _build_generic_bot_pattern()
 
     frames = [
@@ -47,8 +65,8 @@ def classify_traffic() -> pl.DataFrame:
         .with_columns(pl.col("date").str.slice(0, 10).alias("date"))
         .filter(pl.col("date").str.contains(r"^\d{4}-\d{2}-\d{2}$"))
         .with_columns(
-            pl.when(pl.col("user_agent").str.contains(ai_pat))
-            .then(pl.lit("ai_bot"))
+            pl.when(pl.col("user_agent").str.contains(llm_pat))
+            .then(pl.lit("llm_bot"))
             .when(pl.col("user_agent").str.contains(generic_pat))
             .then(pl.lit("generic_bot"))
             .otherwise(pl.lit("human"))
@@ -63,7 +81,7 @@ def classify_traffic() -> pl.DataFrame:
         daily.pivot(on="category", index="date", values="len")
         .fill_null(0)
         .sort("date")
-        .select("date", "human", "generic_bot", "ai_bot")
+        .select("date", "human", "generic_bot", "llm_bot")
     )
 
 

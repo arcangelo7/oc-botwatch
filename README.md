@@ -16,11 +16,13 @@ User-agent strings are matched against three open databases (included as git sub
 - [crawler-user-agents](https://github.com/monperrus/crawler-user-agents)
 - [COUNTER-Robots](https://github.com/atmire/COUNTER-Robots)
 
-A request is labeled `ai_bot` if its user-agent matches any entry in ai.robots.txt. Otherwise, if it matches crawler-user-agents (excluding entries already tagged as `ai-crawler`) or COUNTER-Robots, it's labeled `generic_bot`. Everything else is `human`.
+A request is labeled `llm_bot` if its user-agent matches any entry in ai.robots.txt (apart from "Spider" or "Code", which are too generic and fall through to generic bot detection). Otherwise, if it matches crawler-user-agents (excluding entries already tagged as `ai-crawler`) or COUNTER-Robots, it's labeled `generic_bot`. 
+
+A handful of supplementary patterns cover bots present in our data that none of the three databases include: XeraRetractionTracker, academic-doi-finder, opencitations-second-hop, Episciences, Microsoft.Data.Mashup, PMC_abstract, and the bare `node` user-agent string (i.e., Node.js). Everything else is `human`.
 
 ### Why these three sources
 
-Because they have already been adopted in the literature. In particular, [Liu et al. (2025)](https://doi.org/10.1145/3730567.3732913) uses Dark Visitors, the upstream data source of ai.robots.txt, as its primary reference for compiling AI user agents, and relies on crawler-user-agents as a supplementary corpus of general-purpose bot signatures when testing the coverage of Cloudflare's bot-blocking feature. 
+Because they have already been adopted in the literature. In particular, [Liu et al. (2025)](https://doi.org/10.1145/3730567.3732913) uses Dark Visitors, the upstream data source of ai.robots.txt, as its primary reference for compiling LLM user agents, and relies on crawler-user-agents as a supplementary corpus of general-purpose bot signatures when testing the coverage of Cloudflare's bot-blocking feature. 
 
 COUNTER-Robots is the robot list maintained by [Project COUNTER](https://www.projectcounter.org), an international initiative that sets standards for counting usage of electronic scholarly resources. Since OpenCitations is itself a scholarly infrastructure, filtering its logs with COUNTER-Robots aligns with the conventions of the domain.
 
@@ -45,7 +47,7 @@ Both files are in the `output/` directory.
 `output/daily_traffic.csv`: per-day request counts by category.
 
 ```csv
-date,human,generic_bot,ai_bot
+date,human,generic_bot,llm_bot
 2026-01-01,150432,28901,4210
 2026-01-02,148877,27650,4455
 ...
