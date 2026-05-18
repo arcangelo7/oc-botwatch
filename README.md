@@ -18,7 +18,12 @@ User-agent strings are matched against three open databases (included as git sub
 
 A request is labeled `llm_bot` if its user-agent matches any entry in ai.robots.txt (apart from "Spider" or "Code", which are too generic and fall through to generic bot detection). Otherwise, if it matches crawler-user-agents (excluding entries already tagged as `ai-crawler`) or COUNTER-Robots, it's labeled `generic_bot`. 
 
-A handful of supplementary patterns cover bots present in our data that none of the three databases include: XeraRetractionTracker, academic-doi-finder, opencitations-second-hop, Episciences, Microsoft.Data.Mashup, PMC_abstract, and the bare `node` user-agent string (i.e., Node.js). Everything else is `human`.
+Two supplementary files cover bots present in our data that none of the three databases include:
+
+- [`supplementary_bots.txt`](supplementary_bots.txt)
+- [`supplementary_llm_bots.txt`](supplementary_llm_bots.txt)
+
+Everything else is `human`.
 
 ### Why these three sources
 

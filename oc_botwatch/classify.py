@@ -12,15 +12,8 @@ INPUT_DIR = BASE_DIR / "input"
 
 _SKIP_LLM_NAMES: frozenset[str] = frozenset({"Spider", "Code"})
 
-_SUPPLEMENTARY_BOT_PATTERNS: list[str] = [
-    r"^node$",
-    r"XeraRetractionTracker",
-    r"academic-doi-finder",
-    r"opencitations-second-hop",
-    r"Episciences",
-    r"Microsoft\.Data\.Mashup",
-    r"PMC_abstract",
-]
+_SUPPLEMENTARY_LLM_FILE = BASE_DIR / "supplementary_llm_bots.txt"
+_SUPPLEMENTARY_BOT_FILE = BASE_DIR / "supplementary_bots.txt"
 
 
 def _build_llm_pattern() -> str:
@@ -31,6 +24,7 @@ def _build_llm_pattern() -> str:
         if name in _SKIP_LLM_NAMES:
             continue
         parts.append(rf"\b{re.escape(name)}\b")
+    parts.extend(line for line in _SUPPLEMENTARY_LLM_FILE.read_text().splitlines() if line.strip())
     return "(?i)" + "|".join(parts)
 
 
@@ -45,7 +39,7 @@ def _build_generic_bot_pattern() -> str:
             continue
         patterns.append(entry["pattern"])
     patterns.extend(entry["pattern"] for entry in counter)
-    patterns.extend(_SUPPLEMENTARY_BOT_PATTERNS)
+    patterns.extend(line for line in _SUPPLEMENTARY_BOT_FILE.read_text().splitlines() if line.strip())
     return "(?i)" + "|".join(patterns)
 
 

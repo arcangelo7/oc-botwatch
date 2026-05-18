@@ -1,0 +1,11 @@
+^node$
+XeraRetractionTracker
+academic-doi-finder
+opencitations-second-hop
+Episciences
+Microsoft\.Data\.Mashup
+PMC_abstract
+CraniofacialBibliometrics
+SearchingIdeas
+TraumaBibliometrics
+dataset-citation-finder
