@@ -36,9 +36,7 @@ def _setup_xaxis(ax: Axes) -> None:
 
 def _pivot_by_service(long_df: pl.DataFrame, service: str) -> pl.DataFrame:
     pivoted = (
-        long_df.filter(pl.col("service") == service)
-        .pivot(on="category", index="date", values="count")
-        .fill_null(0)
+        long_df.filter(pl.col("service") == service).pivot(on="category", index="date", values="count").fill_null(0)
     )
     for cat in _CATEGORY_COLUMNS:
         if cat not in pivoted.columns:

@@ -6,33 +6,32 @@ SPDX-License-Identifier: ISC
 
 # oc-botwatch
 
+[![lint](https://github.com/opencitations/oc-botwatch/actions/workflows/lint.yml/badge.svg)](https://github.com/opencitations/oc-botwatch/actions/workflows/lint.yml)
 [![tests](https://github.com/opencitations/oc-botwatch/actions/workflows/test.yml/badge.svg)](https://github.com/opencitations/oc-botwatch/actions/workflows/test.yml)
 [![coverage](https://opencitations.github.io/oc-botwatch/coverage-badge.svg)](https://opencitations.github.io/oc-botwatch/coverage/)
 [![REUSE status](https://api.reuse.software/badge/github.com/opencitations/oc-botwatch)](https://api.reuse.software/info/github.com/opencitations/oc-botwatch)
 
 Classifies traffic from [OpenCitations](https://opencitations.net) server access logs into three categories (human visitors, generic bots, LLM bots) and three services (web, API, SPARQL).
 
-It reads monthly CSV dumps, looks at each request's user-agent, host, and path, and outputs `daily_traffic.csv` with per-day totals by category plus `daily_traffic_by_service.csv` with the same counts broken down by service.
-
 ## Input data
-
-The script reads all `.csv` files from the `input/` directory. Each file is a monthly export of OpenCitations HTTP access logs; the `date`, `user_agent`, `request_host`, `request_path`, `request_method`, and `http_response_code` columns are used. 
 
 The source data is published on Zenodo ([doi:10.5281/zenodo.20289873](https://doi.org/10.5281/zenodo.20289873)). To reproduce the results, download and extract the archive into `input/`.
 
 ## How classification works
 
-The rule we follow is simple: a request only counts as a bot when its user-agent identifies it as one of the well-known crawlers. Nothing else. We match the user-agent against three public lists, included as git submodules:
+A request only counts as a bot when its user-agent identifies it as one of the well-known crawlers. We match the user-agent against three public lists:
 
 - [ai.robots.txt](https://github.com/ai-robots-txt/ai.robots.txt)
 - [crawler-user-agents](https://github.com/monperrus/crawler-user-agents)
 - [COUNTER-Robots](https://github.com/atmire/COUNTER-Robots)
 
-If the user-agent matches an entry in ai.robots.txt, the request is an `llm_bot`. The two names "Spider" and "Code" are skipped because they're too generic and would match strings that have nothing to do with LLM crawlers. If instead it matches crawler-user-agents (minus the entries already tagged `ai-crawler`) or COUNTER-Robots, it's a `generic_bot`. A handful of crawlers turn up in our logs but aren't in any of those three lists, so we keep an extra file for them:
+If the user-agent matches an entry in ai.robots.txt, the request is an `llm_bot`. The two names "Spider" and "Code" are skipped because they're too generic and would match strings that have nothing to do with LLM crawlers. If instead it matches crawler-user-agents (minus the entries already tagged `ai-crawler`) or COUNTER-Robots, it's a `generic_bot`. 
+
+A handful of crawlers turn up in our logs but aren't in any of those three lists, so we keep an extra file for them:
 
 - [`supplementary_bots.txt`](supplementary_bots.txt)
 
-Everything else is `human`. That covers the obvious case of a person browsing the site, but it also covers the less obvious cases on purpose: somebody hitting our API from a Python script, a curl command in a shell loop, a researcher pulling data with a homemade scraper. None of those count as bots here.
+Everything else is `human`. That covers the case of a person browsing the site, but it also covers the cases of somebody using a Python script, a curl command, etc.
 
 ### Why these three sources
 
@@ -50,7 +49,7 @@ Each request is also assigned to one of three services, based on `request_host`,
 
 ## Findings
 
-The dataset covers January through April 2026. The `output/` directory contains `daily_traffic.csv` (per-day counts by category), `daily_traffic_by_service.csv` (per-day counts by category and service), and four stacked area charts.
+The dataset covers January through April 2026. The `output/` directory contains `daily_traffic.csv` (per-day counts by category), `daily_traffic_by_service.csv` (per-day counts by category and service).
 
 ![Daily traffic](output/daily_traffic.png)
 
@@ -64,7 +63,7 @@ Human traffic sits between 32% and 45% of monthly requests. Generic bots take 48
 
 ![Daily traffic share by service](output/daily_traffic_by_service_pct.png)
 
-The bulk of LLM bot traffic targets the web front end. Over the four months, LLM crawlers make up 31.5% of web requests: nearly one in three. On the API and SPARQL endpoints they barely register, hovering around 4%, while generic bots dominate both (58.7% and 61.3%).
+The bulk of LLM bot traffic targets the website. Over the four months, LLM crawlers make up 31.5% of website requests: nearly one in three. On the API and SPARQL endpoints they barely register, hovering around 4%, while generic bots dominate both (58.7% and 61.3%).
 
 | Service | Human | Generic bot | LLM bot |
 |---|---|---|---|

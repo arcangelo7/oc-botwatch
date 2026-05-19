@@ -56,10 +56,7 @@ def _classify_service(host: pl.Expr, path: pl.Expr, method: pl.Expr) -> pl.Expr:
     return (
         pl.when(path.str.contains(_SPARQL_PATH_RE))
         .then(pl.lit("sparql"))
-        .when(
-            (host == _SPARQL_HOST)
-            & (path.str.contains(_SPARQL_QUERY_RE) | (method == "POST"))
-        )
+        .when((host == _SPARQL_HOST) & (path.str.contains(_SPARQL_QUERY_RE) | (method == "POST")))
         .then(pl.lit("sparql"))
         .when(path.str.contains(_API_VERSIONED_PATH_RE))
         .then(pl.lit("api"))
@@ -98,7 +95,11 @@ def classify_traffic(input_dir: Path = INPUT_DIR) -> pl.DataFrame:
             .then(pl.lit("generic_bot"))
             .otherwise(pl.lit("human"))
             .alias("category"),
-            _classify_service(pl.col("request_host"), pl.col("request_path"), pl.col("request_method")).alias("service"),
+            _classify_service(
+                pl.col("request_host"),
+                pl.col("request_path"),
+                pl.col("request_method"),
+            ).alias("service"),
         )
         .group_by("date", "category", "service")
         .len()
