@@ -37,8 +37,8 @@ The dataset covers January through April 2026. Both files are in the `output/` d
 
 ```csv
 date,human,generic_bot,llm_bot
-2026-01-01,205984,1978755,33985
-2026-01-02,156806,1476709,49966
+2026-01-01,353575,1831164,33985
+2026-01-02,201801,1431714,49966
 ...
 ```
 
@@ -46,7 +46,7 @@ date,human,generic_bot,llm_bot
 
 ![Daily traffic share](output/daily_traffic_pct.png)
 
-Across the entire period, human traffic accounts for 15% to 24% of monthly requests. Generic bots dominate at 66% to 78%. LLM bots started at 2% in January and reached 11% in April, growing from 1.3M to 4.9M monthly requests (+267%).
+Across the entire period, human traffic accounts for 26% to 31% of monthly requests. Generic bots range from 59% to 67%. LLM bots started at 2% in January and reached 11% in April, growing from 1.3M to 4.9M monthly requests (+267%).
 
 ## Limitations
 
