@@ -2,7 +2,7 @@
 name = "oc-botwatch"
 version = "0.1.0"
 description = "Classifies traffic from OpenCitations server access logs into three categories: human visitors, generic bots, and LLM bots"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "matplotlib>=3.10.3",
     "polars>=1.40.1",
@@ -10,7 +10,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "genbadge[coverage]>=1.1.3",
     "pyright>=1.1.409",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
     "ruff>=0.15.13",
 ]
 
@@ -24,6 +27,17 @@ line-length = 120
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = ["D"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=oc_botwatch --cov-report=xml --cov-report=html --cov-report=term-missing"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["oc_botwatch"]
 
 [build-system]
 requires = ["hatchling"]

@@ -10,6 +10,7 @@ from matplotlib.axes import Axes
 logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+OUTPUT_DIR = BASE_DIR / "output"
 
 
 def _prepare(df: pl.DataFrame) -> pl.DataFrame:
@@ -67,12 +68,11 @@ def plot_daily_traffic_pct(df: pl.DataFrame, output: Path) -> None:
     logger.info("Output: %s", output)
 
 
-def main() -> None:
+def main(output_dir: Path = OUTPUT_DIR) -> None:
     logging.basicConfig(level=logging.INFO)
-    df = pl.read_csv(BASE_DIR / "output" / "daily_traffic.csv")
-    out = BASE_DIR / "output"
-    plot_daily_traffic(df, out / "daily_traffic.png")
-    plot_daily_traffic_pct(df, out / "daily_traffic_pct.png")
+    df = pl.read_csv(output_dir / "daily_traffic.csv")
+    plot_daily_traffic(df, output_dir / "daily_traffic.png")
+    plot_daily_traffic_pct(df, output_dir / "daily_traffic_pct.png")
 
 
 if __name__ == "__main__":

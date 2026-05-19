@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 INPUT_DIR = BASE_DIR / "input"
+OUTPUT_DIR = BASE_DIR / "output"
 
 _SKIP_LLM_NAMES: frozenset[str] = frozenset({"Spider", "Code"})
 
@@ -41,7 +42,7 @@ def _build_generic_bot_pattern() -> str:
     return "(?i)" + "|".join(patterns)
 
 
-def classify_traffic() -> pl.DataFrame:
+def classify_traffic(input_dir: Path = INPUT_DIR) -> pl.DataFrame:
     llm_pat = _build_llm_pattern()
     generic_pat = _build_generic_bot_pattern()
 
@@ -49,7 +50,7 @@ def classify_traffic() -> pl.DataFrame:
         pl.scan_csv(f, schema_overrides={"user_agent": pl.Utf8, "date": pl.Utf8}).select(
             "date", "user_agent",
         )
-        for f in sorted(INPUT_DIR.glob("*.csv"))
+        for f in sorted(input_dir.glob("*.csv"))
     ]
 
     daily = (
@@ -77,10 +78,10 @@ def classify_traffic() -> pl.DataFrame:
     )
 
 
-def main() -> None:
+def main(input_dir: Path = INPUT_DIR, output_dir: Path = OUTPUT_DIR) -> None:
     logging.basicConfig(level=logging.INFO)
-    result = classify_traffic()
-    out_path = BASE_DIR / "output" / "daily_traffic.csv"
+    result = classify_traffic(input_dir)
+    out_path = output_dir / "daily_traffic.csv"
     result.write_csv(out_path)
     logger.info("Output: %s", out_path)
 

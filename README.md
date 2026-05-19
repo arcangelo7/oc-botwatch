@@ -1,5 +1,8 @@
 # oc-botwatch
 
+[![tests](https://github.com/arcangelo7/oc-botwatch/actions/workflows/test.yml/badge.svg)](https://github.com/arcangelo7/oc-botwatch/actions/workflows/test.yml)
+[![coverage](https://arcangelo7.github.io/oc-botwatch/coverage-badge.svg)](https://arcangelo7.github.io/oc-botwatch/coverage/)
+
 Classifies traffic from [OpenCitations](https://opencitations.net) server access logs into three categories: human visitors, generic bots, and LLM bots.
 
 It reads monthly CSV dumps, looks at each request's user-agent string, and outputs a single `daily_traffic.csv` with per-day counts for each category.
@@ -51,11 +54,18 @@ We only catch bots that openly identify themselves through the user-agent. Anyth
 
 ## Running
 
-Requires Python 3.13+ and [uv](https://docs.astral.sh/uv/).
+Requires Python 3.10+ and [uv](https://docs.astral.sh/uv/).
 
 ```
 uv sync
 uv run python -m oc_botwatch.classify
 uv run python -m oc_botwatch.visualize
+```
+
+## Tests
+
+```
+uv sync --dev
+uv run pytest
 ```
 
