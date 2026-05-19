@@ -15,7 +15,7 @@ Classifies traffic from [OpenCitations](https://opencitations.net) server access
 
 ## Input data
 
-The source data is published on Zenodo ([doi:10.5281/zenodo.20289873](https://doi.org/10.5281/zenodo.20289873)). To reproduce the results, download and extract the archive into `input/`.
+The source data is published on Zenodo ([https://doi.org/10.5281/zenodo.20291127](https://doi.org/10.5281/zenodo.20291127)). To reproduce the results, download and extract the archive into `input/`.
 
 ## How classification works
 
