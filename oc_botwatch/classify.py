@@ -15,6 +15,11 @@ _SKIP_LLM_NAMES: frozenset[str] = frozenset({"Spider", "Code"})
 
 _SUPPLEMENTARY_BOT_FILE = BASE_DIR / "supplementary_bots.txt"
 
+_SPARQL_HOST = "sparql.opencitations.net"
+_API_HOST = "api.opencitations.net"
+_SPARQL_PATH_RE = r"/sparql(/|$|\?)"
+_API_VERSIONED_PATH_RE = r"^/(index(/api|/coci/api)?|meta(/api)?)/v\d+(/|$)"
+
 
 def _build_llm_pattern() -> str:
     with (BASE_DIR / "ai-robots-txt" / "robots.json").open() as f:
@@ -42,18 +47,38 @@ def _build_generic_bot_pattern() -> str:
     return "(?i)" + "|".join(patterns)
 
 
+def _classify_service(host: pl.Expr, path: pl.Expr) -> pl.Expr:
+    return (
+        pl.when(host == _SPARQL_HOST)
+        .then(pl.lit("sparql"))
+        .when(path.str.contains(_SPARQL_PATH_RE))
+        .then(pl.lit("sparql"))
+        .when(host == _API_HOST)
+        .then(pl.lit("api"))
+        .when(path.str.contains(_API_VERSIONED_PATH_RE))
+        .then(pl.lit("api"))
+        .otherwise(pl.lit("web"))
+    )
+
+
 def classify_traffic(input_dir: Path = INPUT_DIR) -> pl.DataFrame:
     llm_pat = _build_llm_pattern()
     generic_pat = _build_generic_bot_pattern()
 
     frames = [
-        pl.scan_csv(f, schema_overrides={"user_agent": pl.Utf8, "date": pl.Utf8}).select(
-            "date", "user_agent",
-        )
+        pl.scan_csv(
+            f,
+            schema_overrides={
+                "user_agent": pl.Utf8,
+                "date": pl.Utf8,
+                "request_host": pl.Utf8,
+                "request_path": pl.Utf8,
+            },
+        ).select("date", "user_agent", "request_host", "request_path")
         for f in sorted(input_dir.glob("*.csv"))
     ]
 
-    daily = (
+    return (
         pl.concat(frames)
         .with_columns(pl.col("date").str.slice(0, 10).alias("date"))
         .filter(pl.col("date").str.contains(r"^\d{4}-\d{2}-\d{2}$"))
@@ -64,14 +89,22 @@ def classify_traffic(input_dir: Path = INPUT_DIR) -> pl.DataFrame:
             .then(pl.lit("generic_bot"))
             .otherwise(pl.lit("human"))
             .alias("category"),
+            _classify_service(pl.col("request_host"), pl.col("request_path")).alias("service"),
         )
-        .group_by("date", "category")
+        .group_by("date", "category", "service")
         .len()
+        .rename({"len": "count"})
         .collect(engine="streaming")
+        .sort("date", "service", "category")
+        .select("date", "category", "service", "count")
     )
 
+
+def _wide_from_long(long_df: pl.DataFrame) -> pl.DataFrame:
     return (
-        daily.pivot(on="category", index="date", values="len")
+        long_df.group_by("date", "category")
+        .agg(pl.col("count").sum())
+        .pivot(on="category", index="date", values="count")
         .fill_null(0)
         .sort("date")
         .select("date", "human", "generic_bot", "llm_bot")
@@ -80,11 +113,16 @@ def classify_traffic(input_dir: Path = INPUT_DIR) -> pl.DataFrame:
 
 def main(input_dir: Path = INPUT_DIR, output_dir: Path = OUTPUT_DIR) -> None:
     logging.basicConfig(level=logging.INFO)
-    result = classify_traffic(input_dir)
-    out_path = output_dir / "daily_traffic.csv"
-    result.write_csv(out_path)
-    logger.info("Output: %s", out_path)
+    long_df = classify_traffic(input_dir)
+    long_path = output_dir / "daily_traffic_by_service.csv"
+    long_df.write_csv(long_path)
+    logger.info("Output: %s", long_path)
+
+    wide_df = _wide_from_long(long_df)
+    wide_path = output_dir / "daily_traffic.csv"
+    wide_df.write_csv(wide_path)
+    logger.info("Output: %s", wide_path)
 
 
 if __name__ == "__main__":
-    main()
+    main()  # pragma: no cover
