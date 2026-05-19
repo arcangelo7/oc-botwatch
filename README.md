@@ -1,30 +1,26 @@
 # oc-botwatch
 
-Classifies traffic from [OpenCitations](https://opencitations.net) server access logs into three categories: human visitors, generic bots, and LLM bots
+Classifies traffic from [OpenCitations](https://opencitations.net) server access logs into three categories: human visitors, generic bots, and LLM bots.
 
-It reads monthly CSV dumps, classifies each request by its user-agent string and request volume, and outputs a single `daily_traffic.csv` with per-day counts for each category.
+It reads monthly CSV dumps, looks at each request's user-agent string, and outputs a single `daily_traffic.csv` with per-day counts for each category.
 
 ## Input data
 
-The script reads all `.csv` files from the `input/` directory. Each file is a monthly export of OpenCitations HTTP access logs; the `user_agent`, `date`, and `hashed_ip` columns are used. The datasets are not yet publicly available but will be released in the future.
+The script reads all `.csv` files from the `input/` directory. Each file is a monthly export of OpenCitations HTTP access logs; only the `user_agent` and `date` columns are used. The datasets are not yet publicly available but will be released in the future.
 
 ## How classification works
 
-User-agent strings are matched against three open databases (included as git submodules):
+The rule we follow is simple: a request only counts as a bot when its user-agent identifies it as one of the well-known crawlers. Nothing else. We match the user-agent against three public lists, included as git submodules:
 
 - [ai.robots.txt](https://github.com/ai-robots-txt/ai.robots.txt)
 - [crawler-user-agents](https://github.com/monperrus/crawler-user-agents)
 - [COUNTER-Robots](https://github.com/atmire/COUNTER-Robots)
 
-A request is labeled `llm_bot` if its user-agent matches any entry in ai.robots.txt (apart from "Spider" or "Code", which are too generic and fall through to generic bot detection). Otherwise, if it matches crawler-user-agents (excluding entries already tagged as `ai-crawler`) or COUNTER-Robots, it's labeled `generic_bot`. 
-
-A supplementary file covers bots present in our data that none of the three databases include:
+If the user-agent matches an entry in ai.robots.txt, the request is an `llm_bot`. The two names "Spider" and "Code" are skipped because they're too generic and would match strings that have nothing to do with LLM crawlers. If instead it matches crawler-user-agents (minus the entries already tagged `ai-crawler`) or COUNTER-Robots, it's a `generic_bot`. A handful of crawlers turn up in our logs but aren't in any of those three lists, so we keep an extra file for them:
 
 - [`supplementary_bots.txt`](supplementary_bots.txt)
 
-After user-agent classification, any IP that generates more than 1,000 requests in a single day while classified as `human` is reclassified as `generic_bot`.
-
-Everything else is `human`.
+Everything else is `human`. That covers the obvious case of a person browsing the site, but it also covers the less obvious cases on purpose: somebody hitting our API from a Python script, a curl command in a shell loop, a researcher pulling data with a homemade scraper. None of those count as bots here.
 
 ### Why these three sources
 
@@ -51,7 +47,7 @@ Across the entire period, human traffic accounts for 15% to 24% of monthly reque
 
 ## Limitations
 
-User-agent string matching only detects bots that openly identify themselves; the per-IP threshold mitigates UA spoofing but may misclassify shared IPs (university proxies, corporate NATs) that legitimately exceed 1,000 daily requests. In practice, bot counts are a lower bound and human counts an upper bound. The classification remains useful for tracking relative trends over time, since the same rules applied consistently yield comparable proportions across periods.
+We only catch bots that openly identify themselves through the user-agent. Anything that spoofs a browser string, or uses a custom user-agent that doesn't appear in the three lists, is going to land in the human bucket. So in practice the bot counts are a lower bound and the human counts an upper bound. The numbers still work well for tracking how the relative shares move over time, since the same rules are applied across the whole dataset.
 
 ## Running
 

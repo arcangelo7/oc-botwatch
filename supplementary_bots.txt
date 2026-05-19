@@ -1,6 +1,5 @@
 ^node$
 XeraRetractionTracker
-opencitations-second-hop
 Episciences
 Microsoft\.Data\.Mashup
 SFDC-Callout
