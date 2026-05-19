@@ -46,7 +46,7 @@ date,human,generic_bot,llm_bot
 
 ![Daily traffic share](output/daily_traffic_pct.png)
 
-Across the entire period, human traffic accounts for 26% to 31% of monthly requests. Generic bots range from 59% to 67%. LLM bots started at 2% in January and reached 11% in April, growing from 1.3M to 4.9M monthly requests (+267%).
+Across the entire period, human traffic accounts for 26% to 31% of monthly requests. Generic bots range from 59% to 67%. LLM bots started at 2% in January and reached 11% in April, growing from 1.34M to 4.92M monthly requests (+267%).
 
 ## Limitations
 
